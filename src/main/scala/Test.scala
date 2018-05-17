@@ -22,7 +22,6 @@ object Main extends App {
     if (idx > 0) {
       charset = contentType.substring(idx + 8)
     }
-    System.out.println(charset)
     val doc = Jsoup.parse(is, charset, url);
     is.close()
     return doc.body().html()
