@@ -1,4 +1,5 @@
 import java.io.ByteArrayInputStream
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import akka.actor.ActorSystem
@@ -14,13 +15,14 @@ object Main extends App {
   implicit val mat: akka.stream.Materializer = ActorMaterializer()
 
 
-  def detectAndGetBody(url: String, body: String, contentType: String): String = {
-    val is = new ByteArrayInputStream(body.getBytes(StandardCharsets.ISO_8859_1))
+  def detectAndGetBody(url: String, body: Array[Byte], contentType: String): String = {
+    val is = new ByteArrayInputStream(body)
     val idx = contentType.indexOf("charset=")
     var charset = "UTF-8"
     if (idx > 0) {
       charset = contentType.substring(idx + 8)
     }
+    System.out.println(charset)
     val doc = Jsoup.parse(is, charset, url);
     is.close()
     return doc.body().html()
@@ -37,7 +39,7 @@ object Main extends App {
       .map(
         response => {
           response.headers.foreach(println)
-          println(detectAndGetBody(url, response.body, response.header("Content-Type").getOrElse("")))
+          println(detectAndGetBody(url, response.bodyAsBytes.toArray, response.header("Content-Type").getOrElse("")))
         }
       )
   }
